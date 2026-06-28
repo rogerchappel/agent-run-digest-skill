@@ -1,0 +1,6 @@
+{"type":"message","role":"user","message":"Build the release candidate for src/digest.js and docs/PRD.md"}
+{"type":"tool","tool":"exec","command":"npm test","status":"failed","error":"missing fixture"}
+{"type":"message","role":"assistant","message":"Decided to add fixtures/sample-run.jsonl before rerunning checks."}
+{"type":"tool","tool":"apply_patch","path":"src/digest.js","result":"updated parser and redaction handling"}
+{"type":"tool","tool":"exec","command":"npm run smoke","status":"passed"}
+{"type":"message","role":"assistant","message":"Risk: token=ghp_1234567890abcdef should be redacted before sharing."}

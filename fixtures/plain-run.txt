@@ -1,0 +1,4 @@
+User asked for a repository review.
+Agent will inspect README.md and package.json.
+Command: npm test passed.
+Risk: failed package install may block release readiness.
