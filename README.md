@@ -36,6 +36,7 @@ The MVP uses deterministic heuristics so results are easy to test and inspect. I
 ```bash
 npm test
 npm run check
+npm run lint
 npm run build
 npm run smoke
 npm run package:smoke
