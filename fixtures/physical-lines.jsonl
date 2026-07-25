@@ -1,0 +1,4 @@
+{"type":"note","message":"start"}
+
+ 
+{"type":"command","command":"npm test"}
