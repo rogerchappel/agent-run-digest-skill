@@ -18,6 +18,36 @@ test('renders markdown sections', () => {
   assert.match(markdown, /\[REDACTED\]/);
 });
 
+test('preserves physical line numbers while ignoring blank JSONL records', () => {
+  const physicalLines = createDigest('fixtures/physical-lines.jsonl');
+
+  assert.equal(physicalLines.eventCount, 2);
+  assert.deepEqual(physicalLines.commands, ['npm test']);
+  assert.deepEqual(physicalLines.actions, ['line 4: {"type":"command","command":"npm test"}']);
+  assert.match(renderMarkdown(physicalLines), /line 4: .*npm test/);
+});
+
+test('preserves physical line numbers for plain text with whitespace-only records', () => {
+  const physicalLines = createDigest('fixtures/physical-lines.txt');
+
+  assert.equal(physicalLines.eventCount, 2);
+  assert.deepEqual(physicalLines.commands, ['git status']);
+  assert.deepEqual(physicalLines.actions, ['line 4: git status']);
+});
+
+test('json output cites the physical source line', () => {
+  const result = spawnSync(
+    'node',
+    ['bin/agent-run-digest.js', 'fixtures/physical-lines.jsonl', '--format', 'json'],
+    { encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 0);
+  assert.deepEqual(JSON.parse(result.stdout).actions, [
+    'line 4: {"type":"command","command":"npm test"}',
+  ]);
+});
+
 test('cli reports usage when no transcript is supplied', () => {
   const result = spawnSync('node', ['bin/agent-run-digest.js'], { encoding: 'utf8' });
   assert.equal(result.status, 1);
