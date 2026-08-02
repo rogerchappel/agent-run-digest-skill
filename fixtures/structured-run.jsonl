@@ -1,2 +1,2 @@
 {"type":"command","command":"git status","status":"success","message":"README.md","token":"ghp_1234567890abcdef"}
-{"type":"message","role":"assistant","message":"Updated CHANGELOG.md with token=ghp_abcdef1234567890 before release."}
+{"type":"action","role":"assistant","message":"Updated CHANGELOG.md with token=ghp_abcdef1234567890 before release."}

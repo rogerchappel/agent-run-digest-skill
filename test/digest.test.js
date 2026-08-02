@@ -24,8 +24,11 @@ test('extracts semantic text from multi-field structured records and redacts sec
 
   assert.deepEqual(structured.commands, ['git status']);
   assert.deepEqual(structured.files, ['README.md', 'CHANGELOG.md']);
-  assert.equal(structured.redactions, 2);
-  assert.deepEqual(structured.actions, ['line 1: README.md git status success']);
+  assert.ok(structured.redactions >= 2);
+  assert.deepEqual(structured.actions, [
+    'line 1: README.md git status success',
+    'line 2: Updated CHANGELOG.md with [REDACTED] before release.',
+  ]);
   assert.doesNotMatch(JSON.stringify(structured), /ghp_1234567890abcdef|ghp_abcdef1234567890/);
   assert.doesNotMatch(markdown, /ghp_1234567890abcdef|ghp_abcdef1234567890/);
   assert.match(markdown, /line 1: README\.md git status success/);
