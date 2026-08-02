@@ -18,12 +18,29 @@ test('renders markdown sections', () => {
   assert.match(markdown, /\[REDACTED\]/);
 });
 
+test('extracts semantic text from multi-field structured records and redacts secrets', () => {
+  const structured = createDigest('fixtures/structured-run.jsonl');
+  const markdown = renderMarkdown(structured);
+
+  assert.deepEqual(structured.commands, ['git status']);
+  assert.deepEqual(structured.files, ['README.md', 'CHANGELOG.md']);
+  assert.ok(structured.redactions >= 2);
+  assert.deepEqual(structured.actions, [
+    'line 1: README.md git status success',
+    'line 2: Updated CHANGELOG.md with [REDACTED] before release.',
+  ]);
+  assert.doesNotMatch(JSON.stringify(structured), /ghp_1234567890abcdef|ghp_abcdef1234567890/);
+  assert.doesNotMatch(markdown, /ghp_1234567890abcdef|ghp_abcdef1234567890/);
+  assert.match(markdown, /line 1: README\.md git status success/);
+  assert.match(markdown, /line 2: Updated CHANGELOG\.md with \[REDACTED\] before release\./);
+});
+
 test('preserves physical line numbers while ignoring blank JSONL records', () => {
   const physicalLines = createDigest('fixtures/physical-lines.jsonl');
 
   assert.equal(physicalLines.eventCount, 2);
   assert.deepEqual(physicalLines.commands, ['npm test']);
-  assert.deepEqual(physicalLines.actions, ['line 4: {"type":"command","command":"npm test"}']);
+  assert.deepEqual(physicalLines.actions, ['line 4: npm test']);
   assert.match(renderMarkdown(physicalLines), /line 4: .*npm test/);
 });
 
@@ -44,7 +61,7 @@ test('json output cites the physical source line', () => {
 
   assert.equal(result.status, 0);
   assert.deepEqual(JSON.parse(result.stdout).actions, [
-    'line 4: {"type":"command","command":"npm test"}',
+    'line 4: npm test',
   ]);
 });
 
