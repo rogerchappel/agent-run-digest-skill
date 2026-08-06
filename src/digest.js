@@ -2,7 +2,7 @@ import { loadTranscript } from './parser.js';
 import { redactText } from './redact.js';
 
 const FILE_RE = /(?:^|\s)([\w./-]+\.(?:js|ts|json|md|yml|yaml|py|sh|txt|lock))(?:\b|$)/g;
-const COMMAND_RE = /\b(?:npm (?:run )?\w+|node [^\n]+|bash [^\n]+|git [^\n]+|pytest(?: [^\n]+)?|cargo test|go test [^\n]+)\b/g;
+const COMMAND_RE = /\b(?:npm (?:run )?[\w:.-]+(?:\s+--\s+[^\n,;.!?]+)?|node [^\n,;.!?]+|bash [^\n,;.!?]+|git [^\n,;.!?]+|pytest(?: [^\n,;.!?]+)?|cargo test|go test [^\n,;.!?]+)\b/g;
 
 export function createDigest(path, options = {}) {
   const transcript = loadTranscript(path);
