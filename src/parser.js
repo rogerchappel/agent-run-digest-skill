@@ -33,9 +33,22 @@ function parseLine(line, lineNumber) {
 
 function stringifyEvent(data) {
   return [data.message, data.content, data.command, data.path, data.status, data.result, data.error]
-    .filter(Boolean)
-    .map(String)
+    .flatMap(semanticStrings)
     .join(' ');
+}
+
+function semanticStrings(value) {
+  if (value === null || value === undefined || value === false) return [];
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return [String(value)];
+  }
+  if (Array.isArray(value)) return value.flatMap(semanticStrings);
+  if (typeof value === 'object') {
+    const preferred = ['text', 'message', 'content', 'command', 'path', 'status', 'result', 'error'];
+    const fields = preferred.filter(key => Object.hasOwn(value, key));
+    return fields.flatMap(key => semanticStrings(value[key]));
+  }
+  return [];
 }
 
 function classifyText(line) {
