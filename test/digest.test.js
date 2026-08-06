@@ -35,6 +35,32 @@ test('extracts semantic text from multi-field structured records and redacts sec
   assert.match(markdown, /line 2: Updated CHANGELOG\.md with \[REDACTED\] before release\./);
 });
 
+test('extracts redacted evidence from nested structured content blocks', () => {
+  const structured = createDigest('fixtures/nested-content-run.jsonl');
+
+  assert.deepEqual(structured.files, ['src/parser.js']);
+  assert.deepEqual(structured.commands, ['npm run test:unit -- --coverage']);
+  assert.deepEqual(structured.actions, [
+    'line 1: Updated src/parser.js using [REDACTED] and ran npm run test:unit -- --coverage',
+  ]);
+  assert.ok(structured.redactions >= 1);
+  assert.doesNotMatch(JSON.stringify(structured), /\[object Object\]|ghp_nestedfixturetoken/);
+});
+
+test('cli preserves nested JSONL evidence and complete npm script commands', () => {
+  const result = spawnSync(
+    'node',
+    ['bin/agent-run-digest.js', 'fixtures/nested-content-run.jsonl', '--format', 'json'],
+    { encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 0);
+  const output = JSON.parse(result.stdout);
+  assert.deepEqual(output.files, ['src/parser.js']);
+  assert.deepEqual(output.commands, ['npm run test:unit -- --coverage']);
+  assert.doesNotMatch(result.stdout, /\[object Object\]|ghp_nestedfixturetoken/);
+});
+
 test('preserves physical line numbers while ignoring blank JSONL records', () => {
   const physicalLines = createDigest('fixtures/physical-lines.jsonl');
 
