@@ -21,6 +21,9 @@ node bin/agent-run-digest.js fixtures/sample-run.jsonl --format json
 - Reads local fixtures only.
 - Accepts plain-text transcripts and JSONL records, including nested arrays of
   structured text content blocks.
+- Preserves every valid JSON root shape: object fields and array content become
+  semantic text, while strings, numbers, booleans, and `null` become their
+  deterministic transcript representation.
 - Produces deterministic Markdown or JSON.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
