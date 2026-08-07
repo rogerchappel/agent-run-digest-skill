@@ -19,6 +19,16 @@ export function loadTranscript(path) {
 function parseLine(line, lineNumber) {
   try {
     const data = JSON.parse(line);
+    if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+      const text = stringifyJsonRoot(data);
+      return {
+        lineNumber,
+        kind: classifyText(text),
+        actor: 'transcript',
+        text,
+        raw: data,
+      };
+    }
     return {
       lineNumber,
       kind: data.type || data.kind || data.event || 'event',
@@ -29,6 +39,14 @@ function parseLine(line, lineNumber) {
   } catch {
     return { lineNumber, kind: classifyText(line), actor: 'transcript', text: line, raw: line };
   }
+}
+
+function stringifyJsonRoot(data) {
+  if (data === null) return 'null';
+  if (!Array.isArray(data)) return String(data);
+
+  const semanticText = semanticStrings(data).join(' ');
+  return semanticText || JSON.stringify(data);
 }
 
 function stringifyEvent(data) {
