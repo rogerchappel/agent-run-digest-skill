@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createDigest, renderMarkdown } from '../src/digest.js';
+import { loadTranscript } from '../src/parser.js';
 
 const digest = createDigest('fixtures/sample-run.jsonl');
 
@@ -89,6 +93,67 @@ test('json output cites the physical source line', () => {
   assert.deepEqual(JSON.parse(result.stdout).actions, [
     'line 4: npm test',
   ]);
+});
+
+test('preserves every valid JSONL root shape as deterministic transcript text', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-roots-'));
+  const transcript = join(directory, 'roots.jsonl');
+  writeFileSync(transcript, [
+    '"npm test failed"',
+    '42',
+    'true',
+    'false',
+    'null',
+    '["git status", {"content":"blocked by review"}]',
+    '{"message":"updated README.md"}',
+  ].join('\n'));
+
+  try {
+    const transcriptData = loadTranscript(transcript);
+    const roots = createDigest(transcript);
+
+    assert.deepEqual(transcriptData.events.map(({ lineNumber, text }) => ({ lineNumber, text })), [
+      { lineNumber: 1, text: 'npm test failed' },
+      { lineNumber: 2, text: '42' },
+      { lineNumber: 3, text: 'true' },
+      { lineNumber: 4, text: 'false' },
+      { lineNumber: 5, text: 'null' },
+      { lineNumber: 6, text: 'git status blocked by review' },
+      { lineNumber: 7, text: 'updated README.md' },
+    ]);
+    assert.equal(roots.eventCount, 7);
+    assert.deepEqual(roots.commands, ['npm test', 'git status blocked by review']);
+    assert.deepEqual(roots.risks, [
+      'line 1: npm test failed',
+      'line 6: git status blocked by review',
+    ]);
+    assert.deepEqual(roots.actions, []);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test('cli preserves scalar and array JSONL evidence with physical line provenance', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-cli-roots-'));
+  const transcript = join(directory, 'roots.jsonl');
+  writeFileSync(transcript, '"npm test failed"\n\n42\nfalse\nnull\n["git status"]\n');
+
+  try {
+    const result = spawnSync(
+      'node',
+      ['bin/agent-run-digest.js', transcript, '--format', 'json'],
+      { encoding: 'utf8' },
+    );
+
+    assert.equal(result.status, 0, result.stderr);
+    const output = JSON.parse(result.stdout);
+    assert.equal(output.eventCount, 5);
+    assert.deepEqual(output.commands, ['npm test', 'git status']);
+    assert.deepEqual(output.risks, ['line 1: npm test failed']);
+    assert.deepEqual(output.actions, ['line 6: git status']);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
 });
 
 test('cli reports usage when no transcript is supplied', () => {
