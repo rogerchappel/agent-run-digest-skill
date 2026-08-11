@@ -13,8 +13,11 @@ Run the CLI directly:
 
 ```bash
 node bin/agent-run-digest.js fixtures/sample-run.jsonl --format markdown
-node bin/agent-run-digest.js fixtures/sample-run.jsonl --format json
+node bin/agent-run-digest.js --format json fixtures/sample-run.jsonl
 ```
+
+`--format` may appear before or after the single transcript path. If omitted,
+the output defaults to Markdown.
 
 ## What It Does
 

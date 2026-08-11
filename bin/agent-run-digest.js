@@ -3,11 +3,15 @@ import { existsSync } from 'node:fs';
 import { createDigest, renderMarkdown } from '../src/digest.js';
 
 const args = process.argv.slice(2);
-const input = args.find(arg => !arg.startsWith('--'));
-const format = readOption(args, '--format') || 'markdown';
+const { input, format } = parseArgs(args);
 
-if (!input || !existsSync(input)) {
+if (!input) {
   console.error('Usage: agent-run-digest <transcript.jsonl|txt> [--format markdown|json]');
+  process.exit(1);
+}
+
+if (!existsSync(input)) {
+  console.error(`Input file not found: ${input}`);
   process.exit(1);
 }
 
@@ -21,7 +25,38 @@ if (format === 'json') {
   process.exit(1);
 }
 
-function readOption(args, name) {
-  const index = args.indexOf(name);
-  return index === -1 ? undefined : args[index + 1];
+function parseArgs(args) {
+  let input;
+  let format = 'markdown';
+  let hasFormat = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+
+    if (arg === '--format') {
+      if (hasFormat) {
+        fail('Option --format may only be specified once.');
+      }
+      const value = args[index + 1];
+      if (!value || value.startsWith('--')) {
+        fail('Missing value for --format (expected markdown or json).');
+      }
+      format = value;
+      hasFormat = true;
+      index += 1;
+    } else if (arg.startsWith('--')) {
+      fail(`Unknown option: ${arg}`);
+    } else if (input) {
+      fail(`Unexpected extra argument: ${arg}`);
+    } else {
+      input = arg;
+    }
+  }
+
+  return { input, format };
+}
+
+function fail(message) {
+  console.error(message);
+  process.exit(1);
 }
