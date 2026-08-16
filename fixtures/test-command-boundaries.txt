@@ -1,0 +1,5 @@
+Bare checks: go test.
+Workspace checks: cargo test --workspace, then publish the report.
+Watch mode: npm test --watch; results remain local.
+Multiple checks: go test ./... and cargo test --all-features.
+Prose boundaries: go test passed, cargo test succeeded, and npm test failed.
