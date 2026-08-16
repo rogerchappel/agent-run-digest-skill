@@ -30,6 +30,11 @@ the output defaults to Markdown.
   fields first, then other fields in source order; structural metadata such as
   `type`, `role`, and `tool` labels the event instead of becoming evidence.
 - Produces deterministic Markdown or JSON.
+- Extracts supported verification commands from prose. Bare `go test`,
+  `cargo test`, and `npm test` commands are retained along with immediately
+  attached flags (such as `--workspace` or `--watch`) and Go package paths
+  (such as `./...`), while sentence punctuation and following prose are
+  excluded. Multiple commands on one transcript line are reported separately.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
 - Fails fast on missing input files or unsupported formats.
