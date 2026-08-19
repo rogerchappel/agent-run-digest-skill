@@ -3,7 +3,7 @@ import { redactText } from './redact.js';
 
 const FILE_RE = /(?:^|\s)([\w./-]+\.(?:js|ts|json|md|yml|yaml|py|sh|txt|lock))(?:\b|$)/g;
 const TEST_COMMAND_RE = /\b(?:npm test|cargo test|go test)(?:\s+(?:-{1,2}[\w][\w-]*(?:=[\w@%+/:.,-]+)?|(?:\.{1,2}\/|\/)[\w@%+/:.,-]*))*/g;
-const COMMAND_RE = /\b(?:npm run [\w:.-]+(?:\s+--\s+[^\n,;.!?]+)?|node [^\n,;.!?]+|bash [^\n,;.!?]+|git [^\n,;.!?]+|pytest(?: [^\n,;.!?]+)?)/g;
+const COMMAND_RE = /\b(?:npm run [\w:.-]+(?:\s+--\s+[^\n,;!?]+)?|(?:node|bash|git|pytest)(?:\s+(?!(?:then|before|after|and|but|while|when|followed)\b)(?:"[^"]*"|'[^']*'|[^\s,;!?]+))+)/g;
 
 export function createDigest(path, options = {}) {
   const transcript = loadTranscript(path);
@@ -34,7 +34,11 @@ function extractCommands(item) {
     ...item.text.matchAll(COMMAND_RE),
   ]
     .sort((left, right) => left.index - right.index)
-    .map(match => match[0]);
+    .map(match => trimSentencePeriod(match[0]));
+}
+
+function trimSentencePeriod(command) {
+  return command.endsWith('.') && !command.endsWith('...') ? command.slice(0, -1) : command;
 }
 
 export function renderMarkdown(digest) {
