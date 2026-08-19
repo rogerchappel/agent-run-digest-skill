@@ -35,6 +35,10 @@ the output defaults to Markdown.
   attached flags (such as `--workspace` or `--watch`) and Go package paths
   (such as `./...`), while sentence punctuation and following prose are
   excluded. Multiple commands on one transcript line are reported separately.
+  Unstructured `node`, `bash`, `git`, and `pytest` commands retain dotted file
+  and path arguments and stop at prose transitions such as `then`, `before`,
+  `after`, and `and`. A structured record's top-level `command` field remains
+  authoritative and is preserved in full.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
 - Fails fast on missing input files or unsupported formats.
