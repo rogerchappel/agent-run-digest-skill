@@ -21,3 +21,9 @@ their deterministic text representation. For objects, common text fields
 nesting level. Structural metadata (`type`, `kind`, `event`, `actor`, `role`,
 and `tool`) identifies an event and is not repeated as evidence. Callers own
 review and any external sharing of generated output.
+
+The `command` field may be a string, array, or nested object. Structured command
+values are traversed as semantic text in source order, then executable commands
+are extracted, redacted, and deduplicated. Object and array containers are never
+coerced to JavaScript display strings such as `[object Object]` or comma-joined
+array output.

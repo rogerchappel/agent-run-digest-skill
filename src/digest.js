@@ -1,4 +1,4 @@
-import { loadTranscript } from './parser.js';
+import { loadTranscript, semanticStrings } from './parser.js';
 import { redactText } from './redact.js';
 
 const FILE_RE = /(?:^|\s)([\w./-]+\.(?:js|ts|json|md|yml|yaml|py|sh|txt|lock))(?:\b|$)/g;
@@ -26,12 +26,19 @@ export function createDigest(path, options = {}) {
 }
 
 function extractCommands(item) {
-  if (item.raw && typeof item.raw === 'object' && item.raw.command) {
+  if (item.raw && typeof item.raw === 'object' && typeof item.raw.command === 'string') {
     return [redactText(item.raw.command).text];
   }
+  if (item.raw && typeof item.raw === 'object' && item.raw.command) {
+    return semanticStrings(item.raw.command).flatMap(value => extractCommandText(redactText(value).text));
+  }
+  return extractCommandText(item.text);
+}
+
+function extractCommandText(text) {
   return [
-    ...item.text.matchAll(TEST_COMMAND_RE),
-    ...item.text.matchAll(COMMAND_RE),
+    ...text.matchAll(TEST_COMMAND_RE),
+    ...text.matchAll(COMMAND_RE),
   ]
     .sort((left, right) => left.index - right.index)
     .map(match => trimSentencePeriod(match[0]));
