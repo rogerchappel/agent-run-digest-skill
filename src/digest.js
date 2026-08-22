@@ -10,7 +10,7 @@ export function createDigest(path, options = {}) {
   const items = transcript.events.map(event => ({ ...event, text: event.redactedText || event.text }));
   const files = unique(flatMapMatches(items, FILE_RE));
   const commands = unique(items.flatMap(extractCommands));
-  const risks = collect(items, /\b(error|failed|blocked|risk|secret|credential)\b/i);
+  const risks = items.filter(item => hasAffirmativeRisk(item.text)).map(summarizeItem);
   const decisions = collect(items, /\b(decided|selected|chose|will|classification|ship|incubate|kill)\b/i);
   const actions = items.filter(item => /tool|command|action|exec|write|patch/i.test(item.kind + ' ' + item.actor + ' ' + item.text));
   return {
@@ -70,6 +70,15 @@ function section(title, values) {
 
 function collect(items, pattern) {
   return items.filter(item => pattern.test(item.text)).map(summarizeItem);
+}
+
+function hasAffirmativeRisk(text) {
+  const withoutNegatedRisks = text
+    .replace(/\b(?:no|without)\s+(?:\w+\s+){0,3}(?:errors?|failures?|blockers?|risks?|secrets?|credentials?)\b/gi, '')
+    .replace(/\b(?:did|does|do|has|have|had|is|are|was|were|will|would|could|should|can)\s+not\s+(?:\w+\s+){0,3}(?:fail(?:ed|ure)?|block(?:ed)?|expose(?:d)?|leak(?:ed)?)\b/gi, '')
+    .replace(/\b(?:errors?|failures?|blockers?|risks?|secrets?|credentials?)\s+(?:\w+\s+){0,2}(?:resolved|cleared|fixed|mitigated|avoided)\b/gi, '');
+
+  return /\b(?:errors?|fail(?:ed|ure|ures)?|block(?:ed|er|ers)?|risks?|secrets?|credentials?)\b/i.test(withoutNegatedRisks);
 }
 
 function summarizeItem(item) {
