@@ -392,6 +392,33 @@ test('cli defaults to markdown output', () => {
   assert.match(result.stdout, /^# Agent Run Digest/m);
 });
 
+test('cli rejects missing and non-file transcript paths without a stack trace', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-input-'));
+
+  try {
+    for (const { input, error } of [
+      { input: join(directory, 'missing.jsonl'), error: /Input file not found:/ },
+      { input: directory, error: /Input path is not a file:/ },
+    ]) {
+      const result = runCli([input, '--format', 'json']);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, error);
+      assert.doesNotMatch(result.stderr, /\n\s+at |Error: EISDIR/);
+      assert.equal(result.stdout, '');
+    }
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test('cli validates the output format before inspecting the transcript path', () => {
+  const result = runCli(['does-not-exist.jsonl', '--format', 'yaml']);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Unsupported format: yaml/);
+  assert.doesNotMatch(result.stderr, /Input file/);
+  assert.equal(result.stdout, '');
+});
+
 test('cli rejects invalid argument forms with actionable errors', () => {
   const cases = [
     {
