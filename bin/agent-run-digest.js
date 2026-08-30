@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync } from 'node:fs';
+import { accessSync, constants, existsSync, statSync } from 'node:fs';
 import { createDigest, renderMarkdown } from '../src/digest.js';
 
 const args = process.argv.slice(2);
@@ -10,19 +10,39 @@ if (!input) {
   process.exit(1);
 }
 
-if (!existsSync(input)) {
-  console.error(`Input file not found: ${input}`);
-  process.exit(1);
+if (format !== 'json' && format !== 'markdown') {
+  fail(`Unsupported format: ${format}`);
 }
 
-const digest = createDigest(input);
+if (!existsSync(input)) {
+  fail(`Input file not found: ${input}`);
+}
+
+try {
+  if (!statSync(input).isFile()) {
+    fail(`Input path is not a file: ${input}`);
+  }
+  accessSync(input, constants.R_OK);
+} catch (error) {
+  if (error?.code === 'ENOENT') fail(`Input file not found: ${input}`);
+  if (error?.code === 'EACCES' || error?.code === 'EPERM') fail(`Input file is not readable: ${input}`);
+  if (typeof error?.code === 'number') throw error;
+  fail(`Unable to inspect input file: ${input}`);
+}
+
+let digest;
+try {
+  digest = createDigest(input);
+} catch (error) {
+  if (error?.code === 'ENOENT') fail(`Input file not found: ${input}`);
+  if (error?.code === 'EACCES' || error?.code === 'EPERM') fail(`Input file is not readable: ${input}`);
+  fail(`Unable to read input file: ${input}`);
+}
+
 if (format === 'json') {
   console.log(JSON.stringify(digest, null, 2));
-} else if (format === 'markdown') {
-  console.log(renderMarkdown(digest));
 } else {
-  console.error(`Unsupported format: ${format}`);
-  process.exit(1);
+  console.log(renderMarkdown(digest));
 }
 
 function parseArgs(args) {
