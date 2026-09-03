@@ -201,6 +201,7 @@ test('bounds runtime commands at prose while retaining dotted paths', () => {
     'pytest tests/test_api.py',
     'bash scripts/verify.sh',
     'npm test',
+    'pytest "tests/test spaced.py" --maxfail=1',
   ]);
 });
 
@@ -214,7 +215,28 @@ test('cli preserves bounded runtime commands with dotted arguments', () => {
     'pytest tests/test_api.py',
     'bash scripts/verify.sh',
     'npm test',
+    'pytest "tests/test spaced.py" --maxfail=1',
   ]);
+});
+
+test('bounds narrative command text in JSONL while preserving authoritative commands', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-command-prose-'));
+  const transcript = join(directory, 'commands.jsonl');
+  writeFileSync(transcript, [
+    JSON.stringify({ type: 'message', text: 'I ran git status successfully after reviewing files.' }),
+    JSON.stringify({ type: 'message', text: 'Then node scripts/check.js passed cleanly.' }),
+    JSON.stringify({ type: 'command', command: 'git status successfully' }),
+  ].join('\n'));
+
+  try {
+    assert.deepEqual(createDigest(transcript).commands, [
+      'git status',
+      'node scripts/check.js',
+      'git status successfully',
+    ]);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
 });
 
 test('preserves physical line numbers while ignoring blank JSONL records', () => {
