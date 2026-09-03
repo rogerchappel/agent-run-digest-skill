@@ -3,7 +3,8 @@ import { redactText } from './redact.js';
 
 const FILE_RE = /(?:^|\s)([\w./-]+\.(?:js|ts|json|md|yml|yaml|py|sh|txt|lock))(?:\b|$)/g;
 const TEST_COMMAND_RE = /\b(?:npm test|cargo test|go test)(?:\s+(?:-{1,2}[\w][\w-]*(?:=[\w@%+/:.,-]+)?|(?:\.{1,2}\/|\/)[\w@%+/:.,-]*))*/g;
-const COMMAND_RE = /\b(?:npm run [\w:.-]+(?:\s+--\s+[^\n,;!?]+)?|(?:node|bash|git|pytest)(?:\s+(?!(?:then|before|after|and|but|while|when|followed)\b)(?:"[^"]*"|'[^']*'|[^\s,;!?]+))+)/g;
+const PROSE_BOUNDARY = 'then|before|after|and|but|while|when|followed|successfully|passed|failed|cleanly';
+const COMMAND_RE = new RegExp(`\\b(?:npm run [\\w:.-]+(?:\\s+--(?:\\s+(?!(?:${PROSE_BOUNDARY})\\b)(?:"[^"]*"|'[^']*'|[^\\s,;!?]+))+)?|(?:node|bash|git|pytest)(?:\\s+(?!(?:${PROSE_BOUNDARY})\\b)(?:"[^"]*"|'[^']*'|[^\\s,;!?]+))+)`, 'g');
 
 export function createDigest(path, options = {}) {
   const transcript = loadTranscript(path);
