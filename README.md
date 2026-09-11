@@ -75,8 +75,8 @@ step verifies that the CLI, library modules, skill instructions, fixture,
 license, changelog, contribution guide, and security policy are included in the
 dry-run tarball.
 
-CI runs the same release gate on Node 18, 20, and 22. Node 18 is the declared
-minimum supported runtime; Node 20 and 22 cover the maintained release matrix.
+CI runs the same release gate on Node 22 and 24, the in-support LTS lines.
+Node 22 is the declared minimum supported runtime.
 
 Use `docs/RELEASE_CHECKLIST.md` as the reviewer checklist when opening a release
 readiness PR.

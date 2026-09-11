@@ -15,4 +15,4 @@
 
 - [ ] Add richer adapters for more transcript and note formats
 - [ ] Add optional schema export for agent orchestration
-- [x] Run the release gate in CI on Node 18, 20, and 22
+- [x] Run the release gate in CI on the in-support Node LTS lines (22 and 24)
