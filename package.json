@@ -29,8 +29,9 @@
     "build": "node scripts/build.js",
     "smoke": "node bin/agent-run-digest.js fixtures/sample-run.jsonl --format markdown",
     "package:smoke": "node scripts/package-smoke.js",
-    "release:check": "npm run check && npm test && npm run build && npm run smoke && npm run package:smoke",
-    "lint": "npm run check"
+    "release:check": "npm run check && npm run check:docs && npm test && npm run build && npm run smoke && npm run package:smoke",
+    "lint": "npm run check",
+    "check:docs": "node scripts/check-docs.js"
   },
   "keywords": [
     "agent-skill",
