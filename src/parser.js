@@ -53,7 +53,7 @@ function stringifyEvent(data) {
   return semanticStrings(data).join(' ');
 }
 
-function semanticStrings(value) {
+export function semanticStrings(value) {
   if (value === null || value === undefined) return [];
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return [String(value)];

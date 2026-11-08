@@ -69,6 +69,44 @@ test('cli preserves nested JSONL evidence and complete npm script commands', () 
   assert.doesNotMatch(result.stdout, /\[object Object\]|ghp_nestedfixturetoken/);
 });
 
+test('extracts commands from object and array command fields without coercion artifacts', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-structured-commands-'));
+  const transcript = join(directory, 'commands.jsonl');
+  writeFileSync(transcript, [
+    '{"type":"tool","command":{"cmd":"npm test","token":"ghp_structuredcommandtoken"}}',
+    '{"type":"command","command":["git status",{"value":"npm test"},"git status"]}',
+  ].join('\n'));
+
+  try {
+    const structured = createDigest(transcript);
+
+    assert.deepEqual(structured.commands, ['npm test', 'git status']);
+    assert.ok(structured.redactions >= 1);
+    assert.doesNotMatch(JSON.stringify(structured), /\[object Object\]|ghp_structuredcommandtoken/);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test('cli retains semantic evidence from structured command fields', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-cli-structured-commands-'));
+  const transcript = join(directory, 'commands.jsonl');
+  writeFileSync(transcript, [
+    '{"type":"tool","command":{"cmd":"npm test"}}',
+    '{"type":"command","command":["git status",{"value":"npm test"}]}',
+  ].join('\n'));
+
+  try {
+    const result = runCli([transcript, '--format', 'json']);
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout).commands, ['npm test', 'git status']);
+    assert.doesNotMatch(result.stdout, /\[object Object\]/);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
 test('extracts complete test commands without consuming prose or punctuation', () => {
   const commands = createDigest('fixtures/test-command-boundaries.txt');
 
