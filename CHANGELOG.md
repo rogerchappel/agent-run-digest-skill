@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Require Node 22+ (`engines`) and run the CI release gate on the in-support
+  Node 22 and 24 LTS lines; Node 18 and 20 are past end-of-life.
+- `npm run check` now fails if the CI matrix minimum contradicts the declared
+  engines floor.
 - Preserve meaningful evidence from string, number, boolean, `null`, array, and
   object JSONL root records instead of silently discarding or failing on them.
 - Traverse non-preferred and nested object fields deterministically so custom
