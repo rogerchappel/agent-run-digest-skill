@@ -10,6 +10,7 @@ const required = [
   "src/digest.js",
   "src/parser.js",
   "src/redact.js",
+  "scripts/package-smoke.js",
   "fixtures/sample-run.jsonl",
   "SKILL.md",
   "README.md",
