@@ -14,3 +14,8 @@ do not shift references:
 
 - line 4: {"type":"command","command":"npm test"}
 ```
+
+Structured command strings remain unchanged in JSON output. In Markdown output,
+embedded newlines and other whitespace become a single space, and Markdown
+punctuation is escaped so command text cannot introduce a heading or another
+structural element.

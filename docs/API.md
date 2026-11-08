@@ -26,4 +26,9 @@ The `command` field may be a string, array, or nested object. Structured command
 values are traversed as semantic text in source order, then executable commands
 are extracted, redacted, and deduplicated. Object and array containers are never
 coerced to JavaScript display strings such as `[object Object]` or comma-joined
-array output.
+array output. JSON output preserves string command values, including embedded
+newlines. Markdown list values use a single deterministic rendering policy:
+whitespace runs (including newlines) collapse to one space and Markdown
+punctuation is backslash-escaped. This keeps every value in its intended list
+item without allowing command content to create headings, lists, or other
+Markdown structure.
