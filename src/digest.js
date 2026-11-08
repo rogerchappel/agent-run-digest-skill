@@ -64,8 +64,15 @@ export function renderMarkdown(digest) {
 }
 
 function section(title, values) {
-  const rows = values.length ? values.map(value => `- ${value}`) : ['- None detected'];
+  const rows = values.length ? values.map(value => `- ${escapeMarkdownListValue(value)}`) : ['- None detected'];
   return [``, `## ${title}`, ``, ...rows].join('\n');
+}
+
+function escapeMarkdownListValue(value) {
+  return String(value)
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/([\\`*_[\]{}()#+\-.!|>])/g, '\\$1');
 }
 
 function collect(items, pattern) {
