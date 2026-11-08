@@ -1,0 +1,6 @@
+Tests did not fail.
+No credential was exposed.
+The release blocker was resolved.
+Tests failed in CI.
+Deployment is blocked by review.
+A credential was exposed.

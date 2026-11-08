@@ -26,6 +26,26 @@ test('renders markdown sections', () => {
   assert.match(markdown, /\[REDACTED\]/);
 });
 
+test('excludes resolved and explicitly negated risks from plain text', () => {
+  const polarity = createDigest('fixtures/risk-polarity.txt');
+
+  assert.deepEqual(polarity.risks, [
+    'line 4: Tests failed in CI.',
+    'line 5: Deployment is blocked by review.',
+    'line 6: A credential was exposed.',
+  ]);
+});
+
+test('preserves affirmative risks in structured records while excluding negations', () => {
+  const polarity = createDigest('fixtures/risk-polarity.jsonl');
+
+  assert.deepEqual(polarity.risks, [
+    'line 4: Tests failed in CI',
+    'line 5: Release is blocked by review',
+    'line 6: A credential was exposed',
+  ]);
+});
+
 test('extracts semantic text from multi-field structured records and redacts secrets', () => {
   const structured = createDigest('fixtures/structured-run.jsonl');
   const markdown = renderMarkdown(structured);

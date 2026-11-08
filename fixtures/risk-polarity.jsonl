@@ -1,0 +1,6 @@
+{"type":"verification","message":"Tests did not fail"}
+{"type":"security","content":{"message":"no credential was exposed"}}
+{"type":"status","message":"The risk was mitigated"}
+{"type":"verification","message":"Tests failed in CI"}
+{"type":"status","message":"Release is blocked by review"}
+{"type":"security","content":{"message":"A credential was exposed"}}
