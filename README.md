@@ -19,6 +19,8 @@ node bin/agent-run-digest.js fixtures/sample-run.jsonl --format json
 ## What It Does
 
 - Reads local fixtures only.
+- Accepts plain-text transcripts and JSONL records, including nested arrays of
+  structured text content blocks.
 - Produces deterministic Markdown or JSON.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
