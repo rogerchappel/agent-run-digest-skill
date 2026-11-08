@@ -26,7 +26,9 @@ the output defaults to Markdown.
   structured text content blocks.
 - Preserves every valid JSON root shape: object fields and array content become
   semantic text, while strings, numbers, booleans, and `null` become their
-  deterministic transcript representation.
+  deterministic transcript representation. Object traversal reads common text
+  fields first, then other fields in source order; structural metadata such as
+  `type`, `role`, and `tool` labels the event instead of becoming evidence.
 - Produces deterministic Markdown or JSON.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
