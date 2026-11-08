@@ -14,6 +14,7 @@ const required = [
   "SKILL.md",
   "README.md",
   "LICENSE",
+  "SECURITY.md",
   "CHANGELOG.md",
   "CONTRIBUTING.md"
 ];
