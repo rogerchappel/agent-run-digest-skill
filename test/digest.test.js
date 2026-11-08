@@ -98,6 +98,31 @@ test('cli preserves bare, flagged, and multiple bounded test commands', () => {
   ]);
 });
 
+test('bounds runtime commands at prose while retaining dotted paths', () => {
+  const commands = createDigest('fixtures/runtime-command-boundaries.txt');
+
+  assert.deepEqual(commands.commands, [
+    'git status',
+    'node scripts/check.js',
+    'pytest tests/test_api.py',
+    'bash scripts/verify.sh',
+    'npm test',
+  ]);
+});
+
+test('cli preserves bounded runtime commands with dotted arguments', () => {
+  const result = runCli(['fixtures/runtime-command-boundaries.txt', '--format', 'json']);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout).commands, [
+    'git status',
+    'node scripts/check.js',
+    'pytest tests/test_api.py',
+    'bash scripts/verify.sh',
+    'npm test',
+  ]);
+});
+
 test('preserves physical line numbers while ignoring blank JSONL records', () => {
   const physicalLines = createDigest('fixtures/physical-lines.jsonl');
 
