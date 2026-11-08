@@ -160,6 +160,52 @@ test('cli preserves scalar and array JSONL evidence with physical line provenanc
   }
 });
 
+test('extracts semantic evidence from non-preferred and nested object fields', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-object-fields-'));
+  const transcript = join(directory, 'objects.jsonl');
+  writeFileSync(transcript, [
+    '',
+    '{"custom":"npm test failed after updating README.md"}',
+    '{"payload":{"details":"Review docs/API.md with token=ghp_nestedobjecttoken"}}',
+  ].join('\n'));
+
+  try {
+    const transcriptData = loadTranscript(transcript);
+    const objects = createDigest(transcript);
+
+    assert.deepEqual(transcriptData.events.map(({ lineNumber, text }) => ({ lineNumber, text })), [
+      { lineNumber: 2, text: 'npm test failed after updating README.md' },
+      { lineNumber: 3, text: 'Review docs/API.md with token=ghp_nestedobjecttoken' },
+    ]);
+    assert.deepEqual(objects.files, ['README.md', 'docs/API.md']);
+    assert.deepEqual(objects.commands, ['npm test']);
+    assert.deepEqual(objects.risks, ['line 2: npm test failed after updating README.md']);
+    assert.equal(objects.redactions, 1);
+    assert.doesNotMatch(JSON.stringify(objects), /\[object Object\]|ghp_nestedobjecttoken/);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test('cli preserves evidence from non-preferred object fields', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-cli-object-fields-'));
+  const transcript = join(directory, 'objects.jsonl');
+  writeFileSync(transcript, '\n{"custom":"npm test failed after updating README.md"}\n');
+
+  try {
+    const result = runCli([transcript, '--format', 'json']);
+
+    assert.equal(result.status, 0, result.stderr);
+    const output = JSON.parse(result.stdout);
+    assert.deepEqual(output.files, ['README.md']);
+    assert.deepEqual(output.commands, ['npm test']);
+    assert.deepEqual(output.risks, ['line 2: npm test failed after updating README.md']);
+    assert.doesNotMatch(result.stdout, /\[object Object\]/);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
 test('cli reports usage when no transcript is supplied', () => {
   const result = runCli([]);
   assert.equal(result.status, 1);
