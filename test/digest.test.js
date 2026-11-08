@@ -23,7 +23,43 @@ test('creates digest from jsonl transcript', () => {
 test('renders markdown sections', () => {
   const markdown = renderMarkdown(digest);
   assert.match(markdown, /## Verification Commands/);
-  assert.match(markdown, /\[REDACTED\]/);
+  assert.ok(markdown.includes('\\[REDACTED\\]'));
+});
+
+test('renders multiline structured commands as escaped single-line list items', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-markdown-commands-'));
+  const transcript = join(directory, 'commands.jsonl');
+  writeFileSync(transcript, '{"type":"command","command":"npm test\\n## Unexpected *heading* [link](target) | table"}\n');
+
+  try {
+    const structured = createDigest(transcript);
+    const markdown = renderMarkdown(structured);
+
+    assert.deepEqual(structured.commands, ['npm test\n## Unexpected *heading* [link](target) | table']);
+    assert.ok(markdown.includes('- npm test \\#\\# Unexpected \\*heading\\* \\[link\\]\\(target\\) \\| table'));
+    assert.doesNotMatch(markdown, /^## Unexpected/m);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
+});
+
+test('cli preserves multiline command JSON while safely rendering Markdown', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'agent-run-digest-cli-markdown-commands-'));
+  const transcript = join(directory, 'commands.jsonl');
+  writeFileSync(transcript, '{"type":"command","command":"npm test\\r\\n## Unexpected_heading"}\n');
+
+  try {
+    const json = runCli([transcript, '--format', 'json']);
+    const markdown = runCli([transcript, '--format', 'markdown']);
+
+    assert.equal(json.status, 0, json.stderr);
+    assert.deepEqual(JSON.parse(json.stdout).commands, ['npm test\r\n## Unexpected_heading']);
+    assert.equal(markdown.status, 0, markdown.stderr);
+    assert.ok(markdown.stdout.includes('- npm test \\#\\# Unexpected\\_heading'));
+    assert.doesNotMatch(markdown.stdout, /^## Unexpected/m);
+  } finally {
+    rmSync(directory, { recursive: true });
+  }
 });
 
 test('excludes resolved and explicitly negated risks from plain text', () => {
@@ -59,8 +95,8 @@ test('extracts semantic text from multi-field structured records and redacts sec
   ]);
   assert.doesNotMatch(JSON.stringify(structured), /ghp_1234567890abcdef|ghp_abcdef1234567890/);
   assert.doesNotMatch(markdown, /ghp_1234567890abcdef|ghp_abcdef1234567890/);
-  assert.match(markdown, /line 1: README\.md git status success/);
-  assert.match(markdown, /line 2: Updated CHANGELOG\.md with \[REDACTED\] before release\./);
+  assert.ok(markdown.includes('line 1: README\\.md git status success'));
+  assert.ok(markdown.includes('line 2: Updated CHANGELOG\\.md with \\[REDACTED\\] before release\\.'));
 });
 
 test('extracts redacted evidence from nested structured content blocks', () => {
