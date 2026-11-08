@@ -44,7 +44,8 @@ the output defaults to Markdown.
   authoritative and is preserved in full.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
-- Fails fast on missing input files or unsupported formats.
+- Validates the output format before filesystem access and reports missing,
+  unreadable, or non-file transcript paths without a stack trace.
 
 ## Safety Notes
 
