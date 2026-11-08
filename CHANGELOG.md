@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve meaningful evidence from string, number, boolean, `null`, array, and
+  object JSONL root records instead of silently discarding or failing on them.
 - Preserve physical source line numbers in Markdown and JSON evidence summaries
   when transcripts contain blank or whitespace-only records.
 

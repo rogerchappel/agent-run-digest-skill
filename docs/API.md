@@ -13,4 +13,7 @@ Primary functions:
 The API is deterministic and reads local files only. Blank and whitespace-only
 transcript records are ignored, while action, decision, and risk summaries cite
 the original physical source line in both the returned JSON data and rendered
-Markdown. Callers own review and any external sharing of generated output.
+Markdown. JSONL records may have any valid JSON root shape. Objects and arrays
+are reduced to semantic text; string, number, boolean, and `null` roots retain
+their deterministic text representation. Callers own review and any external
+sharing of generated output.
