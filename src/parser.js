@@ -50,20 +50,22 @@ function stringifyJsonRoot(data) {
 }
 
 function stringifyEvent(data) {
-  return [data.message, data.content, data.command, data.path, data.status, data.result, data.error]
-    .flatMap(semanticStrings)
-    .join(' ');
+  return semanticStrings(data).join(' ');
 }
 
 function semanticStrings(value) {
-  if (value === null || value === undefined || value === false) return [];
+  if (value === null || value === undefined) return [];
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return [String(value)];
   }
   if (Array.isArray(value)) return value.flatMap(semanticStrings);
   if (typeof value === 'object') {
     const preferred = ['text', 'message', 'content', 'command', 'path', 'status', 'result', 'error'];
-    const fields = preferred.filter(key => Object.hasOwn(value, key));
+    const metadata = new Set(['type', 'kind', 'event', 'actor', 'role', 'tool']);
+    const fields = [
+      ...preferred.filter(key => Object.hasOwn(value, key)),
+      ...Object.keys(value).filter(key => !preferred.includes(key) && !metadata.has(key)),
+    ];
     return fields.flatMap(key => semanticStrings(value[key]));
   }
   return [];
