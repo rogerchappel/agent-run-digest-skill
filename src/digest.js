@@ -1,4 +1,5 @@
 import { loadTranscript } from './parser.js';
+import { redactText } from './redact.js';
 
 const FILE_RE = /(?:^|\s)([\w./-]+\.(?:js|ts|json|md|yml|yaml|py|sh|txt|lock))(?:\b|$)/g;
 const COMMAND_RE = /\b(?:npm (?:run )?\w+|node [^\n]+|bash [^\n]+|git [^\n]+|pytest(?: [^\n]+)?|cargo test|go test [^\n]+)\b/g;
@@ -7,7 +8,7 @@ export function createDigest(path, options = {}) {
   const transcript = loadTranscript(path);
   const items = transcript.events.map(event => ({ ...event, text: event.redactedText || event.text }));
   const files = unique(flatMapMatches(items, FILE_RE));
-  const commands = unique(flatMapMatches(items, COMMAND_RE));
+  const commands = unique(items.flatMap(extractCommands));
   const risks = collect(items, /\b(error|failed|blocked|risk|secret|credential)\b/i);
   const decisions = collect(items, /\b(decided|selected|chose|will|classification|ship|incubate|kill)\b/i);
   const actions = items.filter(item => /tool|command|action|exec|write|patch/i.test(item.kind + ' ' + item.actor + ' ' + item.text));
@@ -21,6 +22,13 @@ export function createDigest(path, options = {}) {
     risks: risks.slice(0, options.limit ?? 8),
     actions: actions.slice(0, options.limit ?? 12).map(item => summarizeItem(item)),
   };
+}
+
+function extractCommands(item) {
+  if (item.raw && typeof item.raw === 'object' && item.raw.command) {
+    return [redactText(item.raw.command).text];
+  }
+  return [...item.text.matchAll(COMMAND_RE)].map(match => match[1] || match[0]);
 }
 
 export function renderMarkdown(digest) {

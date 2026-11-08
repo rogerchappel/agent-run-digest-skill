@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { redactRecord } from './redact.js';
+import { redactRecord, redactText } from './redact.js';
 
 export function loadTranscript(path) {
   const raw = readFileSync(path, 'utf8');
@@ -8,9 +8,10 @@ export function loadTranscript(path) {
   for (const [index, line] of raw.split(/\r?\n/).entries()) {
     if (!line.trim()) continue;
     const parsed = parseLine(line, index + 1);
-    const redacted = redactRecord(parsed.raw);
-    redactions += redacted.count;
-    events.push({ ...parsed, redactedText: redacted.text });
+    const redactedRecord = redactRecord(parsed.raw);
+    const redactedText = redactText(parsed.text);
+    redactions += redactedRecord.count;
+    events.push({ ...parsed, redactedText: redactedText.text });
   }
   return { path, events, redactions };
 }
