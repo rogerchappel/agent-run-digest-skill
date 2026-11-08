@@ -22,8 +22,10 @@ the output defaults to Markdown.
 ## What It Does
 
 - Reads local fixtures only.
-- Accepts plain-text transcripts and JSONL records, including nested arrays of
-  structured text content blocks.
+- Accepts plain-text transcripts (`.txt`) and newline-delimited JSON (`.jsonl`)
+  with one JSON root per nonblank physical line. JSONL supports objects, arrays,
+  strings, numbers, booleans, and `null`; object fields and nested arrays are
+  traversed recursively, including text content blocks.
 - Preserves every valid JSON root shape: object fields and array content become
   semantic text, while strings, numbers, booleans, and `null` become their
   deterministic transcript representation. Object traversal reads common text
