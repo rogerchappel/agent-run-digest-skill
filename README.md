@@ -30,6 +30,9 @@ the output defaults to Markdown.
   fields first, then other fields in source order; structural metadata such as
   `type`, `role`, and `tool` labels the event instead of becoming evidence.
 - Produces deterministic Markdown or JSON.
+- Treats risk polarity explicitly: affirmative failures, blockers, and
+  credential exposure are reported, while negated or resolved statements such
+  as `Tests did not fail` and `The blocker was resolved` are omitted.
 - Extracts supported verification commands from prose. Bare `go test`,
   `cargo test`, and `npm test` commands are retained along with immediately
   attached flags (such as `--workspace` or `--watch`) and Go package paths
