@@ -38,4 +38,18 @@ npm test
 npm run check
 npm run build
 npm run smoke
+npm run package:smoke
+npm run release:check
 ```
+
+## Release Readiness
+
+Run `npm run release:check` before publishing or tagging. The package smoke
+step verifies that the CLI, library modules, skill instructions, fixture,
+license, changelog, contribution guide, and security policy are included in the
+dry-run tarball.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for supported versions and vulnerability
+reporting guidance. Use synthetic run logs in bug reports and fixtures.
