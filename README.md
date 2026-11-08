@@ -40,8 +40,9 @@ the output defaults to Markdown.
   excluded. Multiple commands on one transcript line are reported separately.
   Unstructured `node`, `bash`, `git`, and `pytest` commands retain dotted file
   and path arguments and stop at prose transitions such as `then`, `before`,
-  `after`, and `and`. A structured record's top-level `command` field remains
-  authoritative and is preserved in full.
+  `after`, and `and`, as well as outcome narration such as `successfully`,
+  `passed cleanly`, or `failed`. A structured record's top-level `command`
+  field remains authoritative and is preserved in full.
 - Cites original physical line numbers while ignoring blank and whitespace-only records.
 - Keeps evidence and assumptions visible.
 - Validates the output format before filesystem access and reports missing,
