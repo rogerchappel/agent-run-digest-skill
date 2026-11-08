@@ -9,6 +9,10 @@ import { loadTranscript } from '../src/parser.js';
 
 const digest = createDigest('fixtures/sample-run.jsonl');
 
+function runCli(args) {
+  return spawnSync('node', ['bin/agent-run-digest.js', ...args], { encoding: 'utf8' });
+}
+
 test('creates digest from jsonl transcript', () => {
   assert.equal(digest.eventCount, 6);
   assert.ok(digest.files.includes('src/digest.js'));
@@ -157,8 +161,71 @@ test('cli preserves scalar and array JSONL evidence with physical line provenanc
 });
 
 test('cli reports usage when no transcript is supplied', () => {
-  const result = spawnSync('node', ['bin/agent-run-digest.js'], { encoding: 'utf8' });
+  const result = runCli([]);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Usage: agent-run-digest/);
   assert.match(result.stderr, /--format markdown\|json/);
+});
+
+test('cli accepts the input and format option in either order', () => {
+  for (const { args, assertion } of [
+    {
+      args: ['fixtures/sample-run.jsonl', '--format', 'json'],
+      assertion: output => assert.equal(JSON.parse(output).eventCount, 6),
+    },
+    {
+      args: ['--format', 'json', 'fixtures/sample-run.jsonl'],
+      assertion: output => assert.equal(JSON.parse(output).eventCount, 6),
+    },
+    {
+      args: ['fixtures/sample-run.jsonl', '--format', 'markdown'],
+      assertion: output => assert.match(output, /^# Agent Run Digest/m),
+    },
+    {
+      args: ['--format', 'markdown', 'fixtures/sample-run.jsonl'],
+      assertion: output => assert.match(output, /^# Agent Run Digest/m),
+    },
+  ]) {
+    const result = runCli(args);
+    assert.equal(result.status, 0, result.stderr);
+    assertion(result.stdout);
+  }
+});
+
+test('cli defaults to markdown output', () => {
+  const result = runCli(['fixtures/sample-run.jsonl']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^# Agent Run Digest/m);
+});
+
+test('cli rejects invalid argument forms with actionable errors', () => {
+  const cases = [
+    {
+      args: ['fixtures/sample-run.jsonl', '--format'],
+      error: /Missing value for --format \(expected markdown or json\)\./,
+    },
+    {
+      args: ['fixtures/sample-run.jsonl', '--typo'],
+      error: /Unknown option: --typo/,
+    },
+    {
+      args: ['fixtures/sample-run.jsonl', 'fixtures/physical-lines.jsonl'],
+      error: /Unexpected extra argument: fixtures\/physical-lines\.jsonl/,
+    },
+    {
+      args: ['fixtures/sample-run.jsonl', '--format', 'yaml'],
+      error: /Unsupported format: yaml/,
+    },
+    {
+      args: ['--format', 'json', 'fixtures/sample-run.jsonl', '--format', 'markdown'],
+      error: /Option --format may only be specified once/,
+    },
+  ];
+
+  for (const { args, error } of cases) {
+    const result = runCli(args);
+    assert.notEqual(result.status, 0, `expected failure for ${args.join(' ')}`);
+    assert.match(result.stderr, error);
+    assert.equal(result.stdout, '');
+  }
 });
