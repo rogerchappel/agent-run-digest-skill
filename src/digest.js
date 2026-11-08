@@ -2,7 +2,8 @@ import { loadTranscript } from './parser.js';
 import { redactText } from './redact.js';
 
 const FILE_RE = /(?:^|\s)([\w./-]+\.(?:js|ts|json|md|yml|yaml|py|sh|txt|lock))(?:\b|$)/g;
-const COMMAND_RE = /\b(?:npm (?:run )?[\w:.-]+(?:\s+--\s+[^\n,;.!?]+)?|node [^\n,;.!?]+|bash [^\n,;.!?]+|git [^\n,;.!?]+|pytest(?: [^\n,;.!?]+)?|cargo test|go test [^\n,;.!?]+)\b/g;
+const TEST_COMMAND_RE = /\b(?:npm test|cargo test|go test)(?:\s+(?:-{1,2}[\w][\w-]*(?:=[\w@%+/:.,-]+)?|(?:\.{1,2}\/|\/)[\w@%+/:.,-]*))*/g;
+const COMMAND_RE = /\b(?:npm run [\w:.-]+(?:\s+--\s+[^\n,;.!?]+)?|node [^\n,;.!?]+|bash [^\n,;.!?]+|git [^\n,;.!?]+|pytest(?: [^\n,;.!?]+)?)/g;
 
 export function createDigest(path, options = {}) {
   const transcript = loadTranscript(path);
@@ -28,7 +29,12 @@ function extractCommands(item) {
   if (item.raw && typeof item.raw === 'object' && item.raw.command) {
     return [redactText(item.raw.command).text];
   }
-  return [...item.text.matchAll(COMMAND_RE)].map(match => match[1] || match[0]);
+  return [
+    ...item.text.matchAll(TEST_COMMAND_RE),
+    ...item.text.matchAll(COMMAND_RE),
+  ]
+    .sort((left, right) => left.index - right.index)
+    .map(match => match[0]);
 }
 
 export function renderMarkdown(digest) {
