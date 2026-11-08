@@ -3,10 +3,10 @@ import { redactRecord } from './redact.js';
 
 export function loadTranscript(path) {
   const raw = readFileSync(path, 'utf8');
-  const lines = raw.split(/\r?\n/).filter(Boolean);
   const events = [];
   let redactions = 0;
-  for (const [index, line] of lines.entries()) {
+  for (const [index, line] of raw.split(/\r?\n/).entries()) {
+    if (!line.trim()) continue;
     const parsed = parseLine(line, index + 1);
     const redacted = redactRecord(parsed.raw);
     redactions += redacted.count;
