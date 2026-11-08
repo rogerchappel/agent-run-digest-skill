@@ -49,6 +49,9 @@ step verifies that the CLI, library modules, skill instructions, fixture,
 license, changelog, contribution guide, and security policy are included in the
 dry-run tarball.
 
+Use `docs/RELEASE_CHECKLIST.md` as the reviewer checklist when opening a release
+readiness PR.
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for supported versions and vulnerability
